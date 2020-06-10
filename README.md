@@ -108,7 +108,7 @@ interface Options {
   minorSteps?: number[];
   lockHex?: string; // hex value
   provideInverted?: boolean;
-  lockInvertedHex?: string; // hex value
+  lockHexInverted?: string; // hex value
   rotation?: "clockwise" | "counterclockwise" | "cw" | "ccw";
   name?: string;
 }
