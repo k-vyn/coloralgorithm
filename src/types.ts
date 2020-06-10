@@ -1,4 +1,4 @@
-export type CurveType = string;
+export type CurveType = number[] | string;
 
 export type HueType = {
   start: number;
@@ -19,22 +19,55 @@ export type BrightnessType = {
   curve: CurveType;
 };
 
-export interface ColorProps {
-  steps: number;
-  minorSteps: number[];
-  hue: HueType;
-  saturation: SaturationType;
-  brightness: BrightnessType;
-  lockHex?: string;
-  provideInverted?: boolean;
-}
+export type ColorAxis = {
+  value: number;
+  step: number;
+};
 
-export interface ColorStep {
+export type ColorStep = {
+  hue: ColorAxis;
+  saturation: ColorAxis;
+  brightness: ColorAxis;
+  isMajor: boolean;
+  isLocked: boolean;
+  step: number;
+};
+
+export type ColorSteps = ColorStep[];
+
+export type AlgorithmResult = ColorSteps[];
+
+export type Color = {
+  step: number;
   hue: number;
   saturation: number;
   brightness: number;
   isMajor: boolean;
-  index: number;
+  isLocked: boolean;
+  hex: string;
+  hsl: number[];
+  hsv: number[];
+  lab: number[];
+  rgbString: string;
+  rgbArray: number[];
+  rgbaString: string;
+  rgbaArray: number[];
+};
+
+export interface ColorOptions {
+  lockHex?: string;
+  lockHexInverted?: string;
+  provideInverted?: boolean;
+  minorSteps?: number[];
+  rotation?: "clockwise" | "cw" | "counterclockwise" | "ccw";
+  name?: string;
 }
 
-export interface ColorResult {}
+export interface ColorProps {
+  steps: number;
+  hue: HueType;
+  saturation: SaturationType;
+  brightness: BrightnessType;
+}
+
+export type ColorSet = Color[];

@@ -1,10 +1,13 @@
 import defaultCurves from "./default-curves";
+import { CurveType } from "./types";
 
-export default function getCoordinates(curve) {
+export default function getCoordinates(curve: CurveType, invert?: boolean) {
   if (typeof curve === "string") {
     const coordinates = defaultCurves[curve];
     if (coordinates) {
-      return coordinates.value;
+      return invert === true
+        ? coordinates.value.slice().reverse()
+        : coordinates.value;
     } else {
       throw Error("provided incorrect curve");
     }
