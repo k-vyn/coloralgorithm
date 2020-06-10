@@ -120,6 +120,8 @@ Provides an additional step in between two steps.
 
 Major steps are whole numbers `0, 1, 2, 3,`. Minor steps are decimal numbers `.5, 1.5, 2.75`.
 
+_Note: Always keep minor steps sorted least-to-greatest._
+
 #### Examples
 
 ```javascript
@@ -139,7 +141,7 @@ Major steps are whole numbers `0, 1, 2, 3,`. Minor steps are decimal numbers `.5
 
 ```javascript
 {
-  minorStep:[50, 60],
+  minorStep:[5, 6],
 }
 // returns steps - ...50, 55, 60, 65...
 ```
