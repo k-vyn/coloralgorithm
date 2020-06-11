@@ -45,7 +45,7 @@ interface Props {
     start: number; // 0 - 1
     end: number; // 0 - 1
     curve: Curve;
-    rate?: number; // 1 is default
+    rate: number; // 1 is default
   };
   brightness: {
     start: number; // 0 - 1
