@@ -1,9 +1,9 @@
-import { AlgorithmResult, ColorProps, ColorOptions } from "./types";
+import { AlgorithmResult, ColorProps, ColorOptions, ColorResults } from "./types";
 import generateColors from "./generate-colors";
 import convertToColors from "./convert-to-colors";
 import generateColorsWithLock from "./generate-colors-with-lock";
 
-export function generate(props: ColorProps, options?: ColorOptions) {
+export function generate(props: ColorProps, options?: ColorOptions): ColorResults {
   if (options === undefined) {
     options = {};
   }
@@ -21,8 +21,8 @@ export function generate(props: ColorProps, options?: ColorOptions) {
     lockHexInverted === undefined
       ? algorithmResult.push(generatedInverted)
       : algorithmResult.push(
-          generateColorsWithLock(props, options, generatedInverted)
-        );
+        generateColorsWithLock(props, options, generatedInverted)
+      );
   }
   return convertToColors(props, options, algorithmResult);
 }

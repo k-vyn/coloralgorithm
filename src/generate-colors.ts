@@ -19,15 +19,15 @@ export default function generateColors(
 
   // generate steps 0 to 1 based on curve
   const hueSteps = generateSteps({
-    curve: getCoordinates(hue.curve, invert),
+    curve: getCoordinates(hue.curve, invert) as [number, number, number, number],
     steps,
   });
   const saturationSteps = generateSteps({
-    curve: getCoordinates(saturation.curve, invert),
+    curve: getCoordinates(saturation.curve, invert) as [number, number, number, number],
     steps,
   });
   const brightnessSteps = generateSteps({
-    curve: getCoordinates(brightness.curve, invert),
+    curve: getCoordinates(brightness.curve, invert) as [number, number, number, number],
     steps,
   });
 

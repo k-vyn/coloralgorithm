@@ -10,14 +10,19 @@
     "strict": true, // Enable all strict type-checking options
     "esModuleInterop": true, // Allows default imports from modules with no default export
     "skipLibCheck": true, // Skip type checking of declaration files (useful for large projects)
-    "forceConsistentCasingInFileNames": true // Ensure consistent casing in file names
+    "forceConsistentCasingInFileNames": true, // Ensure consistent casing in file names
+    "types": [
+      "jest"
+    ],
+    "moduleResolution": "node", // Specify module resolution strategy: 'node' (Node.js) or 'classic' (TypeScript pre-1.6)
   },
   "include": [
-    "src"
+    "src",
+    "tests/**/*.ts"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "rollup.config.js"
+    "rollup.config.mjs"
   ]
 }

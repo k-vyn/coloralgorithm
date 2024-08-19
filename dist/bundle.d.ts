@@ -1,4 +1,4 @@
-type CurveType = number[] | string;
+type CurveType = [number, number, number, number] | string;
 type HueType = {
     start: number;
     end: number;

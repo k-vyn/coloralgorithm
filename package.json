@@ -1,12 +1,13 @@
 {
   "name": "@k-vyn/coloralgorithm",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "An algorithm to produce color sets",
   "main": "dist/bundle.js",
-  "types": "dist/types/index.d.ts",
+  "types": "dist/bundle.d.ts",
   "scripts": {
     "build": "rollup -c",
-    "start": "rollup -c -w"
+    "start": "rollup -c -w",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -32,8 +33,11 @@
     "rollup-plugin-dts": "^6.1.1"
   },
   "devDependencies": {
-    "@types/node": "^14.0.5",
+    "@types/chroma-js": "^2.4.4",
+    "@types/node": "^14.18.63",
+    "babel-jest": "^29.7.0",
     "eslint": "^7.0.0",
+    "jest": "^29.7.0",
     "tslib": "^2.0.0",
     "typescript": "^5.5.4"
   }

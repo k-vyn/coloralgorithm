@@ -1,6 +1,6 @@
 import distribute from "./distribute";
 import { ColorProps, ColorStep, ColorSteps, ColorOptions } from "./types";
-const chroma = require("chroma-js");
+import chroma from "chroma-js";
 
 function replaceNaN(array: number[]) {
   // fixes a NaN for 0 values in ChromaJS
@@ -41,11 +41,13 @@ export default function generateColorsWithLock(
   results.forEach(function (color, index) {
     const { hue, saturation, brightness } = color;
     const hex = chroma.hsv(hue.value, saturation.value, brightness.value);
-    const distance = chroma.distance(hex, options.lockHex);
-    if (shortestDistance > distance) {
-      shortestDistance = distance;
-      lockedColor = color;
-      lockedIndex = index;
+    if (options.lockHex !== undefined) {
+      const distance = chroma.distance(hex, options.lockHex);
+      if (shortestDistance > distance) {
+        shortestDistance = distance;
+        lockedColor = color;
+        lockedIndex = index;
+      }
     }
   });
 
