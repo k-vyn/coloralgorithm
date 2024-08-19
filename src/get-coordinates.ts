@@ -3,7 +3,7 @@ import { CurveType } from "./types";
 
 export default function getCoordinates(curve: CurveType, invert?: boolean) {
   if (typeof curve === "string") {
-    const coordinates = defaultCurves[curve];
+    const coordinates = defaultCurves[curve as keyof typeof defaultCurves];
     if (coordinates) {
       return invert === true
         ? coordinates.value.slice().reverse()
