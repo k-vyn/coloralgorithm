@@ -33,6 +33,25 @@ export type ColorStep = {
   step: number;
 };
 
+export type ColorResult = {
+  step: number;
+  hue: number;
+  saturation: number;
+  brightness: number;
+  isMajor: boolean;
+  isLocked: boolean;
+  hex: string;
+  hsl: number[];
+  hsv: number[];
+  lab: number[];
+  rgbString: string;
+  rgbArray: number[];
+  rgbaString: string;
+  rgbaArray: number[];
+}
+
+
+
 export type ColorSteps = ColorStep[];
 
 export type AlgorithmResult = ColorSteps[];
@@ -59,7 +78,7 @@ export interface ColorOptions {
   lockHexInverted?: string;
   provideInverted?: boolean;
   minorSteps?: number[];
-  rotation?: "clockwise" | "cw" | "counterclockwise" | "ccw";
+  rotation?: string;
   name?: string;
 }
 
@@ -71,3 +90,27 @@ export interface ColorProps {
 }
 
 export type ColorSet = Color[];
+
+
+export type ConvertedColor = {
+  step: number;
+  hue: number;
+  saturation: number;
+  brightness: number;
+  isMajor: boolean;
+  isLocked: boolean;
+  hex: string;
+  hsl: number[];
+  hsv: number[];
+  lab: number[];
+  rgbString: string;
+  rgbArray: number[];
+  rgbaString: string;
+  rgbaArray: number[];
+};
+
+export type ColorResults = {
+  inverted: boolean;
+  name: string | undefined;
+  colors: ConvertedColor[];
+}[]

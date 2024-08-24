@@ -1,10 +1,9 @@
-const bezier = require("bezier-easing");
+import bezier from "bezier-easing";
 
 type Props = {
-  curve: number[];
+  curve: [number, number, number, number]; // Ensure this is a tuple of four numbers
   steps: number;
 };
-
 export default function generateNumberOfSteps({
   curve,
   steps,

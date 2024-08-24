@@ -1,7 +1,28 @@
 {
   "compilerOptions": {
-    "declaration": false
+    "outDir": "./dist", // Specify an output directory for the compiled files
+    "declaration": true, // Generate corresponding '.d.ts' files
+    "declarationMap": true, // Generate source maps for '.d.ts' files (optional, useful for debugging)
+    "declarationDir": "./dist/types", // Specify the output directory for generated declaration files
+    "emitDeclarationOnly": false, // Set to true if you only want to generate declarations
+    "module": "ESNext", // Specify module code generation: 'CommonJS', 'ES6', etc.
+    "target": "ES6", // Specify ECMAScript target version: 'ES5', 'ES6', 'ESNext', etc.
+    "strict": true, // Enable all strict type-checking options
+    "esModuleInterop": true, // Allows default imports from modules with no default export
+    "skipLibCheck": true, // Skip type checking of declaration files (useful for large projects)
+    "forceConsistentCasingInFileNames": true, // Ensure consistent casing in file names
+    "types": [
+      "jest"
+    ],
+    "moduleResolution": "node", // Specify module resolution strategy: 'node' (Node.js) or 'classic' (TypeScript pre-1.6)
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "build", "dist", "example", "rollup.config.js"]
+  "include": [
+    "src",
+    "tests/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "rollup.config.mjs"
+  ]
 }

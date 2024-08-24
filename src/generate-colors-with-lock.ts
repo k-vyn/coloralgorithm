@@ -1,6 +1,6 @@
 import distribute from "./distribute";
 import { ColorProps, ColorStep, ColorSteps, ColorOptions } from "./types";
-const chroma = require("chroma-js");
+import chroma from "chroma-js";
 
 function replaceNaN(array: number[]) {
   // fixes a NaN for 0 values in ChromaJS
@@ -26,7 +26,14 @@ export default function generateColorsWithLock(
     : convertToNamedObject(chroma.hex(`${options.lockHex}`).hsv());
 
   let shortestDistance = 999999;
-  let lockedColor: ColorStep;
+  let lockedColor: ColorStep = {
+    hue: { step: 0, value: 0 },
+    saturation: { step: 0, value: 0 },
+    brightness: { step: 0, value: 0 },
+    step: 0,
+    isMajor: false,
+    isLocked: false
+  };
   let lockedIndex: number;
 
   const lastColor = results[results.length - 1];
@@ -34,11 +41,13 @@ export default function generateColorsWithLock(
   results.forEach(function (color, index) {
     const { hue, saturation, brightness } = color;
     const hex = chroma.hsv(hue.value, saturation.value, brightness.value);
-    const distance = chroma.distance(hex, options.lockHex);
-    if (shortestDistance > distance) {
-      shortestDistance = distance;
-      lockedColor = color;
-      lockedIndex = index;
+    if (options.lockHex !== undefined) {
+      const distance = chroma.distance(hex, options.lockHex);
+      if (shortestDistance > distance) {
+        shortestDistance = distance;
+        lockedColor = color;
+        lockedIndex = index;
+      }
     }
   });
 
@@ -103,17 +112,17 @@ export default function generateColorsWithLock(
     } else {
       const hueDifference = distribute({
         value: index,
-        rangeA: [lockedIndex, lastColor.step + options.minorSteps.length],
+        rangeA: [lockedIndex, lastColor.step + (options?.minorSteps?.length || 0)],
         rangeB: [difference.hue, 0],
       });
       const saturationDifference = distribute({
         value: index,
-        rangeA: [lockedIndex, lastColor.step + options.minorSteps.length],
+        rangeA: [lockedIndex, lastColor.step + (options?.minorSteps?.length || 0)],
         rangeB: [difference.saturation, 0],
       });
       const brightnessDifference = distribute({
         value: index,
-        rangeA: [lockedIndex, lastColor.step + options.minorSteps.length],
+        rangeA: [lockedIndex, lastColor.step + (options?.minorSteps?.length || 0)],
         rangeB: [difference.brightness, 0],
       });
       return {
@@ -121,7 +130,7 @@ export default function generateColorsWithLock(
           step: color.hue.step,
           value:
             color.hue.value + hueDifference > 0 ||
-            color.hue.value + hueDifference < 360
+              color.hue.value + hueDifference < 360
               ? color.hue.value + hueDifference
               : 0,
         },

@@ -1,11 +1,12 @@
-import { ColorProps, AlgorithmResult, Color, ColorOptions } from "./types";
-const chroma = require("chroma-js");
+import { ColorProps, AlgorithmResult, ColorOptions, ColorResults, ConvertedColor } from "./types";
+import chroma from "chroma-js";
+
 
 export default function convertToColors(
   props: ColorProps,
   options: ColorOptions,
   algorithmResult: AlgorithmResult
-) {
+): ColorResults {
   const results = algorithmResult.map(function (set, i) {
     const colors = set.map(function ({
       hue,
@@ -21,7 +22,8 @@ export default function convertToColors(
         array[0] = 0;
         return array;
       }
-      return {
+
+      const convertedColor: ConvertedColor = {
         step,
         hue: hue.value,
         saturation: saturation.value,
@@ -37,6 +39,7 @@ export default function convertToColors(
         rgbaString: color.rgba().join(),
         rgbaArray: color.rgba(),
       };
+      return convertedColor
     });
     return {
       inverted: i > 0 ? true : false,
@@ -46,3 +49,4 @@ export default function convertToColors(
   });
   return results;
 }
+
