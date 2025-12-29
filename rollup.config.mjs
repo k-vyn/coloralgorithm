@@ -14,7 +14,7 @@ export default [
       nodeResolve(),
       commonjs(),
       typescript({
-        tsconfig: './tsconfig.json'
+        tsconfig: './tsconfig.build.json'
       }),
     ],
   },

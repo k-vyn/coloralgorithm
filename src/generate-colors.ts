@@ -104,7 +104,7 @@ export default function generateColors(
 
   // generate minor steps
   if (minorSteps) {
-    minorSteps.forEach(function (o, i) {
+    minorSteps.forEach(function (o, _i) {
       const defaultStep: ColorStep = {
         hue: {
           step: 0,

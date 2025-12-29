@@ -78,7 +78,7 @@ export interface ColorOptions {
   lockHexInverted?: string;
   provideInverted?: boolean;
   minorSteps?: number[];
-  rotation?: string;
+  rotation?: 'clockwise' | 'counterclockwise' | 'cw' | 'ccw';
   name?: string;
 }
 

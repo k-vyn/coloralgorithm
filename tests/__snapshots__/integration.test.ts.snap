@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Integration: Color Generation > Regression > matches snapshot for standard blue palette 1`] = `
+[
+  "#ebf1ff",
+  "#becffe",
+  "#93a9fd",
+  "#6c82fb",
+  "#4c5ff7",
+  "#3342f2",
+  "#202ae9",
+  "#1117d7",
+  "#070aad",
+  "#02026b",
+  "#000033",
+]
+`;
