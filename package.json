@@ -1,13 +1,33 @@
 {
   "name": "@k-vyn/coloralgorithm",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "An algorithm to produce color sets",
+  "type": "module",
   "main": "dist/bundle.js",
   "types": "dist/bundle.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/bundle.d.ts",
+      "import": "./dist/bundle.js",
+      "require": "./dist/bundle.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean",
     "build": "rollup -c",
+    "postbuild": "rm -rf dist/types",
     "start": "rollup -c -w",
-    "test": "jest"
+    "test": "vitest run",
+    "lint": "eslint src tests",
+    "prepublishOnly": "npm run lint && npm test && npm run build"
   },
   "repository": {
     "type": "git",
@@ -15,7 +35,14 @@
   },
   "keywords": [
     "color",
-    "algorithm"
+    "palette",
+    "design-system",
+    "color-scale",
+    "color-generation",
+    "hsb",
+    "hsl",
+    "bezier",
+    "easing"
   ],
   "author": "kevyn@kevyn.io",
   "license": "ISC",
@@ -24,21 +51,22 @@
   },
   "homepage": "https://github.com/k-vyn/coloralgorithm#readme",
   "dependencies": {
+    "bezier-easing": "^2.1.0",
+    "chroma-js": "^3.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.6",
-    "bezier-easing": "^2.1.0",
-    "chroma-js": "^3.0.0",
-    "rollup": "^4.21.0",
-    "rollup-plugin-dts": "^6.1.1"
-  },
-  "devDependencies": {
     "@types/chroma-js": "^2.4.4",
-    "@types/node": "^14.18.63",
-    "babel-jest": "^29.7.0",
-    "eslint": "^7.0.0",
-    "jest": "^29.7.0",
+    "@types/node": "^20.19.27",
+    "eslint": "^9.39.2",
+    "rollup": "^4.21.0",
+    "rollup-plugin-dts": "^6.1.1",
     "tslib": "^2.0.0",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.50.1",
+    "vitest": "^4.0.16"
   }
 }

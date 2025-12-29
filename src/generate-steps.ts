@@ -9,7 +9,7 @@ export default function generateNumberOfSteps({
   steps,
 }: Props): number[] {
   const arrayOfSteps = Array.from(Array(steps).keys());
-  var array = [];
+  const array: number[] = [];
   for (const step in arrayOfSteps) {
     const stepNumber = parseInt(step, 10);
     const easing = bezier(...curve);

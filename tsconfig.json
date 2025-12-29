@@ -7,14 +7,13 @@
     "emitDeclarationOnly": false, // Set to true if you only want to generate declarations
     "module": "ESNext", // Specify module code generation: 'CommonJS', 'ES6', etc.
     "target": "ES6", // Specify ECMAScript target version: 'ES5', 'ES6', 'ESNext', etc.
+    "lib": ["ES2018", "DOM"], // Include modern JS features like array.includes()
     "strict": true, // Enable all strict type-checking options
     "esModuleInterop": true, // Allows default imports from modules with no default export
-    "skipLibCheck": true, // Skip type checking of declaration files (useful for large projects)
+    "skipLibCheck": false, // Skip type checking of declaration files (useful for large projects)
     "forceConsistentCasingInFileNames": true, // Ensure consistent casing in file names
-    "types": [
-      "jest"
-    ],
-    "moduleResolution": "node", // Specify module resolution strategy: 'node' (Node.js) or 'classic' (TypeScript pre-1.6)
+    "types": [],
+    "moduleResolution": "bundler" // Module resolution for bundlers like Rollup
   },
   "include": [
     "src",

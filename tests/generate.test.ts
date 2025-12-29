@@ -1,14 +1,15 @@
 // tests/generate.test.ts
 
+import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { generate } from '../src/index';
 import generateColors from '../src/generate-colors';
 import convertToColors from '../src/convert-to-colors';
 import generateColorsWithLock from '../src/generate-colors-with-lock';
 
 // Mock the dependencies
-jest.mock('../src/generate-colors');
-jest.mock('../src/convert-to-colors');
-jest.mock('../src/generate-colors-with-lock');
+vi.mock('../src/generate-colors');
+vi.mock('../src/convert-to-colors');
+vi.mock('../src/generate-colors-with-lock');
 
 describe('generate function', () => {
     const mockProps = {
@@ -35,7 +36,7 @@ describe('generate function', () => {
             minorSteps: [0, 1],
             name: 'Blue',
             provideInverted: false,
-            rotation: 'clockwise',
+            rotation: 'clockwise' as const,
         },
     };
 
@@ -43,14 +44,14 @@ describe('generate function', () => {
     const mockConvertedColors = { /* mock converted color results */ };
 
     beforeEach(() => {
-        (generateColors as jest.Mock).mockClear();
-        (convertToColors as jest.Mock).mockClear();
-        (generateColorsWithLock as jest.Mock).mockClear();
+        (generateColors as Mock).mockClear();
+        (convertToColors as Mock).mockClear();
+        (generateColorsWithLock as Mock).mockClear();
     });
 
     it('should generate colors and convert them without providing inverted colors', () => {
-        (generateColors as jest.Mock).mockReturnValue(mockGeneratedColors);
-        (convertToColors as jest.Mock).mockReturnValue(mockConvertedColors);
+        (generateColors as Mock).mockReturnValue(mockGeneratedColors);
+        (convertToColors as Mock).mockReturnValue(mockConvertedColors);
 
         const result = generate(mockProps.properties, mockProps.options);
 
@@ -64,9 +65,9 @@ describe('generate function', () => {
         const lockHexOptions = { ...mockProps.options, lockHex: "#000" };
         const mockLockedColors = [{ /* mock locked color data */ }];
 
-        (generateColors as jest.Mock).mockReturnValue(mockGeneratedColors);
-        (generateColorsWithLock as jest.Mock).mockReturnValue(mockLockedColors);
-        (convertToColors as jest.Mock).mockReturnValue(mockConvertedColors);
+        (generateColors as Mock).mockReturnValue(mockGeneratedColors);
+        (generateColorsWithLock as Mock).mockReturnValue(mockLockedColors);
+        (convertToColors as Mock).mockReturnValue(mockConvertedColors);
 
         const result = generate(mockProps.properties, lockHexOptions);
 
@@ -80,8 +81,8 @@ describe('generate function', () => {
         const invertedOptions = { ...mockProps.options, provideInverted: true };
         const mockInvertedColors = [{ /* mock inverted color data */ }];
 
-        (generateColors as jest.Mock).mockReturnValueOnce(mockGeneratedColors).mockReturnValueOnce(mockInvertedColors);
-        (convertToColors as jest.Mock).mockReturnValue(mockConvertedColors);
+        (generateColors as Mock).mockReturnValueOnce(mockGeneratedColors).mockReturnValueOnce(mockInvertedColors);
+        (convertToColors as Mock).mockReturnValue(mockConvertedColors);
 
         const result = generate(mockProps.properties, invertedOptions);
 

@@ -28,10 +28,123 @@ function distribute({ value, rangeA, rangeB, limit, }) {
     return result;
 }
 
-const bezier$2 = require("bezier-easing");
+function getDefaultExportFromCjs (x) {
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+}
+
+/**
+ * https://github.com/gre/bezier-easing
+ * BezierEasing - use bezier curve for transition easing function
+ * by Gaëtan Renaudeau 2014 - 2015 – MIT License
+ */
+
+// These values are established by empiricism with tests (tradeoff: performance VS precision)
+var NEWTON_ITERATIONS = 4;
+var NEWTON_MIN_SLOPE = 0.001;
+var SUBDIVISION_PRECISION = 0.0000001;
+var SUBDIVISION_MAX_ITERATIONS = 10;
+
+var kSplineTableSize = 11;
+var kSampleStepSize = 1.0 / (kSplineTableSize - 1.0);
+
+var float32ArraySupported = typeof Float32Array === 'function';
+
+function A (aA1, aA2) { return 1.0 - 3.0 * aA2 + 3.0 * aA1; }
+function B (aA1, aA2) { return 3.0 * aA2 - 6.0 * aA1; }
+function C (aA1)      { return 3.0 * aA1; }
+
+// Returns x(t) given t, x1, and x2, or y(t) given t, y1, and y2.
+function calcBezier (aT, aA1, aA2) { return ((A(aA1, aA2) * aT + B(aA1, aA2)) * aT + C(aA1)) * aT; }
+
+// Returns dx/dt given t, x1, and x2, or dy/dt given t, y1, and y2.
+function getSlope (aT, aA1, aA2) { return 3.0 * A(aA1, aA2) * aT * aT + 2.0 * B(aA1, aA2) * aT + C(aA1); }
+
+function binarySubdivide (aX, aA, aB, mX1, mX2) {
+  var currentX, currentT, i = 0;
+  do {
+    currentT = aA + (aB - aA) / 2.0;
+    currentX = calcBezier(currentT, mX1, mX2) - aX;
+    if (currentX > 0.0) {
+      aB = currentT;
+    } else {
+      aA = currentT;
+    }
+  } while (Math.abs(currentX) > SUBDIVISION_PRECISION && ++i < SUBDIVISION_MAX_ITERATIONS);
+  return currentT;
+}
+
+function newtonRaphsonIterate (aX, aGuessT, mX1, mX2) {
+ for (var i = 0; i < NEWTON_ITERATIONS; ++i) {
+   var currentSlope = getSlope(aGuessT, mX1, mX2);
+   if (currentSlope === 0.0) {
+     return aGuessT;
+   }
+   var currentX = calcBezier(aGuessT, mX1, mX2) - aX;
+   aGuessT -= currentX / currentSlope;
+ }
+ return aGuessT;
+}
+
+function LinearEasing (x) {
+  return x;
+}
+
+var src = function bezier (mX1, mY1, mX2, mY2) {
+  if (!(0 <= mX1 && mX1 <= 1 && 0 <= mX2 && mX2 <= 1)) {
+    throw new Error('bezier x values must be in [0, 1] range');
+  }
+
+  if (mX1 === mY1 && mX2 === mY2) {
+    return LinearEasing;
+  }
+
+  // Precompute samples table
+  var sampleValues = float32ArraySupported ? new Float32Array(kSplineTableSize) : new Array(kSplineTableSize);
+  for (var i = 0; i < kSplineTableSize; ++i) {
+    sampleValues[i] = calcBezier(i * kSampleStepSize, mX1, mX2);
+  }
+
+  function getTForX (aX) {
+    var intervalStart = 0.0;
+    var currentSample = 1;
+    var lastSample = kSplineTableSize - 1;
+
+    for (; currentSample !== lastSample && sampleValues[currentSample] <= aX; ++currentSample) {
+      intervalStart += kSampleStepSize;
+    }
+    --currentSample;
+
+    // Interpolate to provide an initial guess for t
+    var dist = (aX - sampleValues[currentSample]) / (sampleValues[currentSample + 1] - sampleValues[currentSample]);
+    var guessForT = intervalStart + dist * kSampleStepSize;
+
+    var initialSlope = getSlope(guessForT, mX1, mX2);
+    if (initialSlope >= NEWTON_MIN_SLOPE) {
+      return newtonRaphsonIterate(aX, guessForT, mX1, mX2);
+    } else if (initialSlope === 0.0) {
+      return guessForT;
+    } else {
+      return binarySubdivide(aX, intervalStart, intervalStart + kSampleStepSize, mX1, mX2);
+    }
+  }
+
+  return function BezierEasing (x) {
+    // Because JavaScript number are imprecise, we should guarantee the extremes are right.
+    if (x === 0) {
+      return 0;
+    }
+    if (x === 1) {
+      return 1;
+    }
+    return calcBezier(getTForX(x), mY1, mY2);
+  };
+};
+
+var bezier$2 = /*@__PURE__*/getDefaultExportFromCjs(src);
+
 function generateNumberOfSteps({ curve, steps, }) {
     const arrayOfSteps = Array.from(Array(steps).keys());
-    var array = [];
+    const array = [];
     for (const step in arrayOfSteps) {
         const stepNumber = parseInt(step, 10);
         const easing = bezier$2(...curve);
@@ -286,22 +399,14 @@ function generateColors(props, options, invert) {
     });
     // generate minor steps
     if (minorSteps) {
-        minorSteps.forEach(function (o, i) {
+        minorSteps.forEach(function (o, _i) {
             const defaultStep = {
                 hue: {
-                    step: 0,
-                    value: 0,
-                },
+                    step: 0},
                 saturation: {
-                    step: 0,
-                    value: 0,
-                },
+                    step: 0},
                 brightness: {
-                    step: 0,
-                    value: 0,
-                },
-                isMajor: true,
-                isLocked: false,
+                    step: 0},
                 step: 0,
             };
             let insertPreviousStep = defaultStep;
@@ -367,43 +472,6 @@ function generateColors(props, options, invert) {
         });
     }
     return colorSteps;
-}
-
-const chroma$1 = require("chroma-js");
-function convertToColors(props, options, algorithmResult) {
-    const results = algorithmResult.map(function (set, i) {
-        const colors = set.map(function ({ hue, saturation, brightness, isMajor, isLocked, step, }) {
-            const color = chroma$1.hsv(hue.value, saturation.value, brightness.value);
-            function replaceNaN(array) {
-                // fixes a NaN for 0 values in ChromaJS
-                array[0] = 0;
-                return array;
-            }
-            const convertedColor = {
-                step,
-                hue: hue.value,
-                saturation: saturation.value,
-                brightness: brightness.value,
-                isMajor,
-                isLocked,
-                hex: color.hex(),
-                hsl: isNaN(color.hsl()[0]) ? replaceNaN(color.hsl()) : color.hsl(),
-                hsv: isNaN(color.hsv()[0]) ? replaceNaN(color.hsv()) : color.hsv(),
-                lab: isNaN(color.lab()[0]) ? replaceNaN(color.lab()) : color.lab(),
-                rgbString: color.rgb().join(),
-                rgbArray: color.rgb(),
-                rgbaString: color.rgba().join(),
-                rgbaArray: color.rgba(),
-            };
-            return convertedColor;
-        });
-        return {
-            inverted: i > 0 ? true : false,
-            colors: colors,
-            name: options.name,
-        };
-    });
-    return results;
 }
 
 var limit = (x, low = 0, high = 1) => {
@@ -828,11 +896,6 @@ const labConstants = {
     Xn: 0.95047,
     Yn: 1,
     Zn: 1.08883,
-
-    t0: 0.137931034, // 4 / 29
-    t1: 0.206896552, // 6 / 29
-    t2: 0.12841855, // 3 * t1 * t1
-    t3: 0.008856452, // t1 * t1 * t1,
 
     kE: 216.0 / 24389.0,
     kKE: 8.0,
@@ -2003,7 +2066,7 @@ function XYZ_to_OKLab(XYZ) {
     ];
     const LMStoOKLab = [
         [0.210454268309314, 0.7936177747023054, -0.0040720430116193],
-        [1.9779985324311684, -2.4285922420485799, 0.450593709617411],
+        [1.9779985324311684, -2.42859224204858, 0.450593709617411],
         [0.0259040424655478, 0.7827717124575296, -0.8086757549230774]
     ];
 
@@ -2740,7 +2803,7 @@ function cubehelix (
         const sin_a = sin$1(a);
         const r = l + amp * (-0.14861 * cos_a + 1.78277 * sin_a);
         const g = l + amp * (-0.29227 * cos_a - 0.90649 * sin_a);
-        const b = l + amp * (+1.97294 * cos_a);
+        const b = l + amp * (1.97294 * cos_a);
         return chroma(clip_rgb([r * 255, g * 255, b * 255, 1]));
     };
     f.start = function (s) {
@@ -3766,6 +3829,42 @@ Object.assign(chroma, {
     valid
 });
 
+function convertToColors(props, options, algorithmResult) {
+    const results = algorithmResult.map(function (set, i) {
+        const colors = set.map(function ({ hue, saturation, brightness, isMajor, isLocked, step, }) {
+            const color = chroma.hsv(hue.value, saturation.value, brightness.value);
+            function replaceNaN(array) {
+                // fixes a NaN for 0 values in ChromaJS
+                array[0] = 0;
+                return array;
+            }
+            const convertedColor = {
+                step,
+                hue: hue.value,
+                saturation: saturation.value,
+                brightness: brightness.value,
+                isMajor,
+                isLocked,
+                hex: color.hex(),
+                hsl: isNaN(color.hsl()[0]) ? replaceNaN(color.hsl()) : color.hsl(),
+                hsv: isNaN(color.hsv()[0]) ? replaceNaN(color.hsv()) : color.hsv(),
+                lab: isNaN(color.lab()[0]) ? replaceNaN(color.lab()) : color.lab(),
+                rgbString: color.rgb().join(),
+                rgbArray: color.rgb(),
+                rgbaString: color.rgba().join(),
+                rgbaArray: color.rgba(),
+            };
+            return convertedColor;
+        });
+        return {
+            inverted: i > 0 ? true : false,
+            colors: colors,
+            name: options.name,
+        };
+    });
+    return results;
+}
+
 function replaceNaN(array) {
     // fixes a NaN for 0 values in ChromaJS
     array[0] = 0;
@@ -3784,13 +3883,9 @@ function generateColorsWithLock(props, options, results) {
         : convertToNamedObject(chroma.hex(`${options.lockHex}`).hsv());
     let shortestDistance = 999999;
     let lockedColor = {
-        hue: { step: 0, value: 0 },
-        saturation: { step: 0, value: 0 },
-        brightness: { step: 0, value: 0 },
-        step: 0,
-        isMajor: false,
-        isLocked: false
-    };
+        hue: { value: 0 },
+        saturation: { value: 0 },
+        brightness: { value: 0 }};
     let lockedIndex;
     const lastColor = results[results.length - 1];
     results.forEach(function (color, index) {
@@ -3907,7 +4002,172 @@ function generateColorsWithLock(props, options, results) {
     return adjustedColorSet;
 }
 
+/**
+ * Custom error class for coloralgorithm validation and runtime errors.
+ * Provides error codes for programmatic error handling.
+ */
+class ColorAlgorithmError extends Error {
+    constructor(message, code) {
+        super(message);
+        this.code = code;
+        this.name = 'ColorAlgorithmError';
+        // Maintains proper stack trace for where error was thrown (V8 engines)
+        const ErrorWithCapture = Error;
+        if (ErrorWithCapture.captureStackTrace) {
+            ErrorWithCapture.captureStackTrace(this, ColorAlgorithmError);
+        }
+    }
+}
+// Error codes for programmatic handling
+const ErrorCodes = {
+    INVALID_STEPS: 'INVALID_STEPS',
+    INVALID_HUE: 'INVALID_HUE',
+    INVALID_SATURATION: 'INVALID_SATURATION',
+    INVALID_BRIGHTNESS: 'INVALID_BRIGHTNESS',
+    INVALID_RATE: 'INVALID_RATE',
+    INVALID_CURVE: 'INVALID_CURVE',
+    INVALID_HEX: 'INVALID_HEX',
+    INVALID_MINOR_STEPS: 'INVALID_MINOR_STEPS',
+    MISSING_PROPS: 'MISSING_PROPS',
+};
+
+/**
+ * Validates all props and options before color generation.
+ * Throws ColorAlgorithmError with specific error codes for invalid inputs.
+ */
+function validateProps(props, options) {
+    if (!props) {
+        throw new ColorAlgorithmError('props is required', ErrorCodes.MISSING_PROPS);
+    }
+    validateSteps(props.steps);
+    validateHue(props.hue);
+    validateSaturation(props.saturation);
+    validateBrightness(props.brightness);
+    if (options) {
+        validateOptions(options);
+    }
+}
+function validateSteps(steps) {
+    if (typeof steps !== 'number' || steps < 2 || !Number.isInteger(steps)) {
+        throw new ColorAlgorithmError(`steps must be an integer >= 2, got: ${steps}`, ErrorCodes.INVALID_STEPS);
+    }
+}
+function validateHue(hue) {
+    if (!hue) {
+        throw new ColorAlgorithmError('hue configuration is required', ErrorCodes.INVALID_HUE);
+    }
+    if (typeof hue.start !== 'number' || hue.start < 0 || hue.start > 360) {
+        throw new ColorAlgorithmError(`hue.start must be a number between 0-360, got: ${hue.start}`, ErrorCodes.INVALID_HUE);
+    }
+    if (typeof hue.end !== 'number' || hue.end < 0 || hue.end > 360) {
+        throw new ColorAlgorithmError(`hue.end must be a number between 0-360, got: ${hue.end}`, ErrorCodes.INVALID_HUE);
+    }
+    validateCurve(hue.curve, 'hue.curve');
+}
+function validateSaturation(saturation) {
+    if (!saturation) {
+        throw new ColorAlgorithmError('saturation configuration is required', ErrorCodes.INVALID_SATURATION);
+    }
+    if (typeof saturation.start !== 'number' || saturation.start < 0 || saturation.start > 1) {
+        throw new ColorAlgorithmError(`saturation.start must be a number between 0-1, got: ${saturation.start}`, ErrorCodes.INVALID_SATURATION);
+    }
+    if (typeof saturation.end !== 'number' || saturation.end < 0 || saturation.end > 1) {
+        throw new ColorAlgorithmError(`saturation.end must be a number between 0-1, got: ${saturation.end}`, ErrorCodes.INVALID_SATURATION);
+    }
+    if (typeof saturation.rate !== 'number' || saturation.rate <= 0) {
+        throw new ColorAlgorithmError(`saturation.rate must be a positive number, got: ${saturation.rate}`, ErrorCodes.INVALID_RATE);
+    }
+    validateCurve(saturation.curve, 'saturation.curve');
+}
+function validateBrightness(brightness) {
+    if (!brightness) {
+        throw new ColorAlgorithmError('brightness configuration is required', ErrorCodes.INVALID_BRIGHTNESS);
+    }
+    if (typeof brightness.start !== 'number' || brightness.start < 0 || brightness.start > 1) {
+        throw new ColorAlgorithmError(`brightness.start must be a number between 0-1, got: ${brightness.start}`, ErrorCodes.INVALID_BRIGHTNESS);
+    }
+    if (typeof brightness.end !== 'number' || brightness.end < 0 || brightness.end > 1) {
+        throw new ColorAlgorithmError(`brightness.end must be a number between 0-1, got: ${brightness.end}`, ErrorCodes.INVALID_BRIGHTNESS);
+    }
+    validateCurve(brightness.curve, 'brightness.curve');
+}
+function validateCurve(curve, field) {
+    if (typeof curve === 'string') {
+        const validCurves = Object.keys(defaultCurves);
+        if (!validCurves.includes(curve)) {
+            throw new ColorAlgorithmError(`${field}: unknown curve "${curve}". Valid curves: ${validCurves.join(', ')}`, ErrorCodes.INVALID_CURVE);
+        }
+    }
+    else if (Array.isArray(curve)) {
+        if (curve.length !== 4) {
+            throw new ColorAlgorithmError(`${field}: curve array must have exactly 4 numbers, got ${curve.length}`, ErrorCodes.INVALID_CURVE);
+        }
+        if (curve.some(v => typeof v !== 'number' || isNaN(v))) {
+            throw new ColorAlgorithmError(`${field}: curve array must contain only valid numbers`, ErrorCodes.INVALID_CURVE);
+        }
+    }
+    else {
+        throw new ColorAlgorithmError(`${field}: curve must be a string or array of 4 numbers`, ErrorCodes.INVALID_CURVE);
+    }
+}
+function validateOptions(options) {
+    if (options.lockHex !== undefined) {
+        validateHex(options.lockHex, 'lockHex');
+    }
+    if (options.lockHexInverted !== undefined) {
+        validateHex(options.lockHexInverted, 'lockHexInverted');
+    }
+    if (options.minorSteps !== undefined) {
+        if (!Array.isArray(options.minorSteps)) {
+            throw new ColorAlgorithmError('minorSteps must be an array of numbers', ErrorCodes.INVALID_MINOR_STEPS);
+        }
+        if (options.minorSteps.some(v => typeof v !== 'number' || isNaN(v))) {
+            throw new ColorAlgorithmError('minorSteps must contain only valid numbers', ErrorCodes.INVALID_MINOR_STEPS);
+        }
+    }
+}
+function validateHex(hex, field) {
+    const hexRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
+    if (!hexRegex.test(hex)) {
+        throw new ColorAlgorithmError(`${field}: invalid hex color "${hex}". Expected format: #RGB or #RRGGBB`, ErrorCodes.INVALID_HEX);
+    }
+}
+
+/**
+ * Generates a cohesive color palette based on HSB (Hue, Saturation, Brightness) curves.
+ *
+ * @param props - Color generation parameters
+ * @param props.steps - Number of color steps to generate (minimum 2)
+ * @param props.hue - Hue configuration (start: 0-360, end: 0-360, curve)
+ * @param props.saturation - Saturation configuration (start: 0-1, end: 0-1, rate, curve)
+ * @param props.brightness - Brightness configuration (start: 0-1, end: 0-1, curve)
+ * @param options - Optional settings
+ * @param options.lockHex - Lock a specific hex color in the palette
+ * @param options.lockHexInverted - Lock a specific hex in the inverted palette
+ * @param options.provideInverted - Generate an inverted color set
+ * @param options.minorSteps - Add intermediate steps between major steps
+ * @param options.rotation - Hue rotation direction ('clockwise' | 'counterclockwise')
+ * @param options.name - Name to include in the result
+ * @returns Array of color sets with multiple format outputs (hex, rgb, hsl, hsv, lab)
+ * @throws {ColorAlgorithmError} If props or options are invalid
+ *
+ * @example
+ * ```typescript
+ * import { generate } from '@k-vyn/coloralgorithm';
+ *
+ * const palette = generate({
+ *   steps: 11,
+ *   hue: { start: 220, end: 240, curve: 'easeOutQuad' },
+ *   saturation: { start: 0.08, end: 1, rate: 1, curve: 'easeOutQuad' },
+ *   brightness: { start: 1, end: 0.2, curve: 'easeInQuart' },
+ * }, {
+ *   name: 'Blue',
+ * });
+ * ```
+ */
 function generate(props, options) {
+    // Validate inputs before processing
+    validateProps(props, options);
     if (options === undefined) {
         options = {};
     }
@@ -3922,11 +4182,14 @@ function generate(props, options) {
     }
     if (provideInverted) {
         const generatedInverted = generateColors(props, options, true);
-        lockHexInverted === undefined
-            ? algorithmResult.push(generatedInverted)
-            : algorithmResult.push(generateColorsWithLock(props, options, generatedInverted));
+        if (lockHexInverted === undefined) {
+            algorithmResult.push(generatedInverted);
+        }
+        else {
+            algorithmResult.push(generateColorsWithLock(props, options, generatedInverted));
+        }
     }
     return convertToColors(props, options, algorithmResult);
 }
 
-export { generate };
+export { ColorAlgorithmError, ErrorCodes, generate };
