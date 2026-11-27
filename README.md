@@ -1,5 +1,12 @@
 # color-algorithm
 
+> **New home:** use [@usecolorbox/core](https://www.npmjs.com/package/@usecolorbox/core)
+> and [usecolorbox/core](https://github.com/usecolorbox/core) for ongoing development.
+> The initial core v2 release preserves the v2 generation API and palette output.
+> Read the [migration guide](https://github.com/usecolorbox/core/blob/master/MIGRATION.md)
+> before updating imports. **v1 users:** the existing v2 input-validation change
+> still applies. The old npm package remains installable for existing lockfiles.
+
 A JavaScript function for producing color sets. Used to build Lyft's color system (Spectrum) and power [ColorBox](https://www.colorbox.io/).
 
 ## Upgrading to v2.0.0
